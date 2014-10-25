@@ -21,12 +21,12 @@ public class WikiDAO {
         getAllStatement = connection.prepareStatement("SELECT content FROM pages");
     }
 
-    public Stream all() throws SQLException {
+    public Stream<String> all() throws SQLException {
         final ResultSet resultSet = getAllStatement.executeQuery();
         ResultSetIterator it = new ResultSetIterator(resultSet);
 
         Stream<String> s = StreamSupport.stream(
-          Spliterators.spliteratorUnknownSize(it, 0), false
+          Spliterators.spliteratorUnknownSize(it, 0), true
         );
         return s;
     }
