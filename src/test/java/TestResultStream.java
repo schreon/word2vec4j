@@ -7,14 +7,14 @@ import java.util.function.Consumer;
  */
 public class TestResultStream {
     @Test
-    public void testResultStream(){
+    public void testResultStream() throws Exception {
         WikiDAO wiki = new WikiDAO("/home/leon/Downloads/wiki.db");
 
-        wiki.stream().limit(100).forEach(new Consumer<String>(){
+        wiki.all().limit(5).forEach(new Consumer<String>() {
 
             @Override
             public void accept(String s) {
-
+                System.out.println(s);
             }
         });
     }
