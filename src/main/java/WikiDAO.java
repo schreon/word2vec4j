@@ -1,18 +1,12 @@
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetIterator;
 import org.sqlite.JDBC;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -29,7 +23,7 @@ public class WikiDAO {
 
     public Stream all() throws SQLException {
         final ResultSet resultSet = getAllStatement.executeQuery();
-        ResultIterable it = new ResultIterable(resultSet);
+        ResultSetIterator it = new ResultSetIterator(resultSet);
 
         Stream<String> s = StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(it, 0), false

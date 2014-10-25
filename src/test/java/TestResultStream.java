@@ -10,12 +10,6 @@ public class TestResultStream {
     public void testResultStream() throws Exception {
         WikiDAO wiki = new WikiDAO("/home/leon/Downloads/wiki.db");
 
-        wiki.all().limit(5).forEach(new Consumer<String>() {
-
-            @Override
-            public void accept(String s) {
-                System.out.println(s);
-            }
-        });
+        wiki.all().limit(100000).forEach(s -> {});
     }
 }
