@@ -23,7 +23,7 @@ public class WikiDAO {
 
     public Stream<String> all() throws SQLException {
         final ResultSet resultSet = getAllStatement.executeQuery();
-        ResultSetIterator it = new ResultSetIterator(resultSet);
+        final AsyncIterator<String> it = new AsyncIterator<>(new ResultSetIterator(resultSet));
 
         Stream<String> s = StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(it, 0), true

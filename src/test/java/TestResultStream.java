@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 public class TestResultStream {
     @Test
     public void testResultStream() throws Exception {
-        WikiDAO wiki = new WikiDAO("/home/leon/Downloads/wiki.db");
+        WikiDAO wiki = new WikiDAO("/home/schreon/Downloads/wiki.db");
 
         final ConcurrentMap<String, Integer> wordCount = new ConcurrentHashMap<>(2000000);
         wiki.all().forEach(s -> {
