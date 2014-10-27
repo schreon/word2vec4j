@@ -31,35 +31,41 @@ public class ResultSetIterator implements Iterable<String>, Iterator<String> {
     }
 
     @Override
-    public boolean hasNext() {
-        synchronized (resultSet) {
-            return this.thisHasNext;
+    public synchronized boolean hasNext(){
+        try {
+            return !resultSet.isClosed();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public String next() {
-        synchronized(resultSet) {
-            if (hasNext()) {
-                try {
+    public synchronized String next() {
+        try {
+            if (!resultSet.isClosed()) {
                     n += 1;
                     if (n % 1000 == 0) {
                         current = System.nanoTime();
                         if (current > next) {
-                            res_sec = (double)n / ((current - start) / 1000000000.0);
+                            res_sec = (double) n / ((current - start) / 1000000000.0);
                             System.out.printf("%d @ %.2f results/second %n", n, res_sec);
                             next += TimeUnit.SECONDS.toNanos(1);
                         }
                     }
-                    this.thisHasNext = resultSet.next();
-                    return resultSet.getString(1);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                    if (resultSet.next()) {
+                        return resultSet.getString(1);
+                    } else {
+                        System.out.println(n);
+                        resultSet.close();
+                        return null;
+                    }
             } else {
+                // 1861701
                 return null;
             }
-
+        } catch (SQLException e) {
+               System.out.println(n);
+            throw new RuntimeException(e);
         }
     }
 }

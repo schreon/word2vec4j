@@ -8,6 +8,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+
 public class TestResultStream {
     @Test
     public void testResultStream() throws Exception {
@@ -15,15 +16,22 @@ public class TestResultStream {
 
         final ConcurrentMap<String, Integer> wordCount = new ConcurrentHashMap<>(2000000);
         wiki.all().forEach(s -> {
-            StringTokenizer tokenizer = new StringTokenizer(s);
-            String word;
-            while (tokenizer.hasMoreTokens()) {
-                word = tokenizer.nextToken();
-                if (word.length() < 60) {
-                    wordCount.putIfAbsent(word, 0);
-                    wordCount.put(word, wordCount.get(word) + 1);
-                }
+            if (s != null) {
+//            String word = "init";
+//            try {
+//                while (tokenizer.hasMoreTokens()) {
+//                    word = tokenizer.nextToken().intern();
+//                    if (word.length() < 60) {
+//                        wordCount.putIfAbsent(word, 0);
+//                        wordCount.put(word, wordCount.get(word) + 1);
+//                    }
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                throw new RuntimeException("Exception at word "+word);
+//            }
             }
+            StringTokenizer tokenizer = new StringTokenizer(s);
         });
 
         // remove all words which occur less than 5 times
