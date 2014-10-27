@@ -43,11 +43,13 @@ public class ResultSetIterator implements Iterable<String>, Iterator<String> {
             if (hasNext()) {
                 try {
                     n += 1;
-                    current = System.nanoTime();
-                    if (current > next) {
-                        res_sec = (double)n / ((current - start) / 1000000000.0);
-                        System.out.printf("%.2f results/second %n", res_sec);
-                        next += TimeUnit.SECONDS.toNanos(1);
+                    if (n % 1000 == 0) {
+                        current = System.nanoTime();
+                        if (current > next) {
+                            res_sec = (double)n / ((current - start) / 1000000000.0);
+                            System.out.printf("%d @ %.2f results/second %n", n, res_sec);
+                            next += TimeUnit.SECONDS.toNanos(1);
+                        }
                     }
                     this.thisHasNext = resultSet.next();
                     return resultSet.getString(1);
