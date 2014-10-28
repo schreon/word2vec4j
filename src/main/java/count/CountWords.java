@@ -1,11 +1,13 @@
+package count;
+
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-public class CountWordsInString extends RecursiveAction {
-    final static int LIMIT = 100;
+public class CountWords extends RecursiveAction {
+    final static int LIMIT = 512;
     protected static BiFunction<String, Integer, Integer> addIfPresent = new BiFunction<String, Integer, Integer>() {
         @Override
         public Integer apply(String s, Integer integer) {
@@ -18,19 +20,18 @@ public class CountWordsInString extends RecursiveAction {
             return 0;
         }
     };
-    int start, end;
-    String[] tokens;
-    Map<String, Integer> wordMap;
-    int mid;
+    final int start, end;
+    final String[] tokens;
+    final Map<String, Integer> wordMap;
 
-    public CountWordsInString(Map<String, Integer> wordMap, String[] tokens, int start, int end) {
+    public CountWords(final Map<String, Integer> wordMap, final String[] tokens, final int start, final int end) {
         this.tokens = tokens;
         this.start = start;
         this.end = end;
         this.wordMap = wordMap;
     }
 
-    public static void computeDirectly(Map<String, Integer> wordMap, String[] tokens, int start, int end) {
+    public static void computeDirectly(final Map<String, Integer> wordMap, final String[] tokens, final int start, final int end) {
         String word;
         for (int i = start; i < end; i++) {
             word = tokens[i];
@@ -46,16 +47,20 @@ public class CountWordsInString extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if ((end - start) < LIMIT) {
+        int diff = end - start;
+        if (diff <= LIMIT) {
             computeDirectly(wordMap, tokens, start, end);
         } else {
-            mid = (start + end) / 2;
-            CountWordsInString left = new CountWordsInString(wordMap, tokens, start, mid);
-            left.fork();
-            CountWordsInString right = new CountWordsInString(wordMap, tokens, mid, end);
-            right.fork();
-            left.join();
-            right.join();
+            int split;
+            // Try to make big chunks
+            if (diff < 2 * LIMIT) {
+                split = start + LIMIT;
+            } else {
+                split = (start + end) / 2;
+            }
+            CountWords left = new CountWords(wordMap, tokens, start, split);
+            CountWords right = new CountWords(wordMap, tokens, split, end);
+            invokeAll(left, right);
         }
     }
 }

@@ -1,4 +1,6 @@
 import org.junit.Test;
+import vocabulary.HuffmanTree;
+import vocabulary.Vocabulary;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;

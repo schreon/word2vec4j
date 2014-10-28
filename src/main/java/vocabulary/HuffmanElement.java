@@ -1,3 +1,5 @@
+package vocabulary;
+
 import java.util.List;
 
 public interface HuffmanElement {

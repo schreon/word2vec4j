@@ -1,3 +1,5 @@
+package vocabulary;
+
 import java.io.*;
 import java.util.HashMap;
 

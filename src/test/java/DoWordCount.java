@@ -1,3 +1,4 @@
+import count.FetchDocs;
 import org.sqlite.JDBC;
 
 import java.io.File;
@@ -26,7 +27,7 @@ public class DoWordCount {
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
             start = System.nanoTime();
             FetchDocs fetchDocs = new FetchDocs(wordCount, con, offset, offset + num);
-            ForkJoinPool pool = new ForkJoinPool(6);
+            ForkJoinPool pool = new ForkJoinPool();
 
             //ForkJoinPool.commonPool().invoke(fetchDocs);
             pool.invoke(fetchDocs);

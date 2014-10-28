@@ -1,3 +1,4 @@
+import matrix.Matrix;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -12,9 +13,11 @@ public class TestMatrix {
             Matrix mat = new Matrix(2500000, 128);
             System.out.println("Allocating ...");
             mat.initMatrix();
-            System.out.printf("Matrix %d allocated. %n", i);
+            System.out.printf("matrix.Matrix %d allocated. Randomizing ... %n", i);
             mat.fillNormal(0.0, 0.01);
-            System.out.println("Randomized");
+            System.out.println("Randomized. Normalizing ...");
+            mat.normalize();
+            System.out.println("Normalized.");
             matrices.add(mat);
 
             System.out.printf("[ ");

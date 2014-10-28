@@ -1,3 +1,5 @@
+package count;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,12 +12,12 @@ import java.util.concurrent.RecursiveAction;
 
 public class FetchDocs extends RecursiveAction {
     private static final String sentinel = new String();
-    Connection con;
-    Map<String, Integer> wordMap;
-    int start;
-    int end;
+    final Connection con;
+    final Map<String, Integer> wordMap;
+    final int start;
+    final int end;
 
-    public FetchDocs(Map<String, Integer> wordMap, Connection con, int start, int end) {
+    public FetchDocs(final Map<String, Integer> wordMap, final Connection con, final int start, final int end) {
         this.con = con;
         this.wordMap = wordMap;
         this.start = start;
@@ -27,9 +29,9 @@ public class FetchDocs extends RecursiveAction {
             @Override
             public void run() {
                 try {
-                    PreparedStatement stmt = con.prepareStatement("SELECT content FROM pages LIMIT " + (end - start) + " OFFSET " + start);
+                    final PreparedStatement stmt = con.prepareStatement("SELECT content FROM pages LIMIT " + (end - start) + " OFFSET " + start);
                     stmt.setFetchSize(0);
-                    ResultSet resultSet = stmt.executeQuery();
+                    final ResultSet resultSet = stmt.executeQuery();
                     int n = 0;
                     while (resultSet.next()) {
                         blockingQueue.put(resultSet.getString(1));
@@ -48,30 +50,29 @@ public class FetchDocs extends RecursiveAction {
     @Override
     protected void compute() { // compute directly
         try {
-            ArrayBlockingQueue<String> docQueue = new ArrayBlockingQueue<String>(100);
+            final ArrayBlockingQueue<String> docQueue = new ArrayBlockingQueue<String>(512);
             startDocumentProducer(docQueue, con, start, end);
             String nextDoc = docQueue.take();
             int n = 0;
-            Deque<CountWords> counters = new ArrayDeque<>(100);
-            CountWords counter;
+            Deque<SplitDocument> splitters = new ArrayDeque<>(128);
+            SplitDocument splitter;
             while (nextDoc != sentinel) {
-                counter = new CountWords(wordMap, nextDoc, start, end);
-                counter.fork();
-                counters.add(counter);
+                splitter = new SplitDocument(wordMap, nextDoc);
+                splitters.add(splitter);
                 n += 1;
-                if (n % 100 == 0) {
-                    while (!counters.isEmpty()) {
-                        counters.pop().join();
-                    }
+                if (n % 64 == 0) {
+                    invokeAll(splitters);
+                    splitters.clear();
                 }
                 if (n % 10000 == 0) {
                     System.out.printf("Doc #%d %n", n);
                 }
                 nextDoc = docQueue.take();
             }
-            while (!counters.isEmpty()) {
-                counters.pop().join();
+            if (!splitters.isEmpty()) {
+                invokeAll(splitters);
             }
+            splitters.clear();
             System.out.println("Read sentinel, finished!");
         } catch (Exception e) {
             throw new RuntimeException(e);
