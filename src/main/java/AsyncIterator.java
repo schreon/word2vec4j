@@ -4,12 +4,12 @@ import java.util.concurrent.BlockingQueue;
 
 public class AsyncIterator<T> implements Iterator<T> {
 
-    private BlockingQueue<T> queue = new ArrayBlockingQueue<T>(100);
+    private BlockingQueue<T> queue = new ArrayBlockingQueue<T>(100, false);
     private T sentinel = (T) new Object();
     private T next;
-
+    private Thread thread;
     public AsyncIterator(final Iterator<T> delegate) {
-        new Thread() {
+        thread = new Thread() {
             @Override
             public void run() {
                 try {
@@ -21,7 +21,8 @@ public class AsyncIterator<T> implements Iterator<T> {
                     throw new RuntimeException(e);
                 }
             }
-        }.start();
+        };
+        thread.start();
     }
 
     @Override
@@ -47,4 +48,11 @@ public class AsyncIterator<T> implements Iterator<T> {
         return tmp;
     }
 
+    public void close() {
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

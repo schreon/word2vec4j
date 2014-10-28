@@ -1,28 +1,20 @@
 import java.util.*;
 
-class HuffmanLeaf implements HuffmanElement, Comparable<HuffmanElement> {
-    public long count;
-    public String word;
-    public int index;
-    public HuffmanLeaf(long count, String word, int index) {
-        this.count = count;
-        this.word = word;
-        this.index = index;
-    }
+class HuffmanLeaf implements HuffmanElement {
+    private Vocable vocable;
 
-    @Override
-    public int compareTo(HuffmanElement o) {
-        return count < o.getCount() ? -1 : 1;
+    public HuffmanLeaf(Vocable vocable) {
+        this.vocable = vocable;
     }
 
     @Override
     public long getCount() {
-        return 0;
+        return vocable.getCount();
     }
 
     @Override
-    public void encodePath(List<Integer> parentPath, List<List<Integer>> paths) {
-        paths.set(index, parentPath);
+    public void encodePath(List<Integer> parentPath) {
+        vocable.setPath(parentPath);
     }
 
 }
@@ -41,50 +33,74 @@ public class HuffmanTree implements HuffmanElement {
         this.right = right;
     }
 
-    @Override
-    public long getCount() {
-        return count;
-    }
+    public static Vocabulary createVocabulary(Map<String, Integer> wordCount) {
+        System.out.println("Creating vocabulary ...");
+        int n = wordCount.size();
+        PriorityQueue<HuffmanElement> p = new PriorityQueue<>(n, new Comparator<HuffmanElement>() {
+            @Override
+            public int compare(HuffmanElement o1, HuffmanElement o2) {
+                long c1 = o1.getCount();
+                long c2 = o2.getCount();
 
-    @Override
-    public void encodePath(List<Integer> parentPath, List<List<Integer>> paths) {
-        List<Integer> leftPath = new ArrayList<>(parentPath.size());
-        leftPath.addAll(parentPath);
-        leftPath.add(index);
-        parentPath.add(index); // reuse this object
-        left.encodePath(leftPath, paths);
-        right.encodePath(parentPath, paths);
-    }
-
-
-    public static HuffmanElement createTree(Map<String, Vocable> wordCount) {
-        PriorityQueue<HuffmanElement> p = new PriorityQueue <>();
+                if (c1 < c2) return -1;
+                if (c1 > c2) return 1;
+                return 0;
+            }
+        });
         int syn0idx = 0;
         int syn1idx = 0;
-        long count;
-        String word;
-        for (Map.Entry<String, Vocable> entry : wordCount.entrySet()) {
-            word = entry.getKey();
-            count = entry.getValue().getCount();
-            p.add(new HuffmanLeaf(count, word, syn0idx));
+        Iterator<Map.Entry<String, Integer>> iter = wordCount.entrySet().iterator();
+        Vocabulary vocabulary = new Vocabulary();
+        Map.Entry<String, Integer> entry;
+        while (iter.hasNext()) {
+            entry = iter.next();
+            Vocable vocable = new Vocable();
+            vocable.setCount(entry.getValue());
+            vocable.setIndex(syn0idx);
+            vocabulary.put(entry.getKey(), vocable);
+            p.add(new HuffmanLeaf(vocable));
             syn0idx += 1;
+            iter.remove();
         }
 
         HuffmanElement left, right;
         while (p.size() > 1) {
             left = p.poll();
             right = p.poll();
-            p.add(new HuffmanTree(left.getCount()+right.getCount(), syn1idx, left, right));
+            p.add(new HuffmanTree(left.getCount() + right.getCount(), syn1idx, left, right));
             syn1idx += 1;
         }
+        System.out.printf("Created all Leaves");
 
-        return p.poll();
+        HuffmanElement root = p.poll();
+
+        List<List<Integer>> paths = new ArrayList<>(syn0idx);
+        int s = wordCount.size();
+        for (int i = 0; i < s; i++) {
+            paths.add(null);
+        }
+        System.out.printf("Created all inner Nodes");
+
+        root.encodePath(new ArrayList<Integer>());
+
+        System.out.printf("Encoded all Paths");
+        vocabulary.setNum_vocables(syn0idx);
+        vocabulary.setNum_nodes(syn1idx);
+        return vocabulary;
     }
 
-    public static List<List<Integer>> createPaths(Map<String, Vocable> wordCount) {
-        HuffmanElement root = createTree(wordCount);
-        List<List<Integer>> paths = new ArrayList<>(wordCount.size());
-        root.encodePath(new ArrayList<Integer>(), paths);
-        return paths;
+    @Override
+    public long getCount() {
+        return count;
+    }
+
+    @Override
+    public void encodePath(List<Integer> parentPath) {
+        List<Integer> leftPath = new ArrayList<>(parentPath.size());
+        leftPath.addAll(parentPath);
+        leftPath.add(index);
+        parentPath.add(index); // reuse this object
+        left.encodePath(leftPath);
+        right.encodePath(parentPath);
     }
 }

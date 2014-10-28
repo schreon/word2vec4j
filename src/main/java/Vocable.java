@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Vocable implements Serializable {
     private int index;
-    private long count;
+    private int count;
     private List<Integer> path;
 
     public List<Integer> getPath() {
@@ -22,11 +22,11 @@ public class Vocable implements Serializable {
         this.index = index;
     }
 
-    public long getCount() {
+    public int getCount() {
         return count;
     }
 
-    public synchronized void increaseCount() {
-        count += 1;
+    public void setCount(int count) {
+        this.count = count;
     }
 }
