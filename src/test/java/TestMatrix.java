@@ -17,7 +17,8 @@ public class TestMatrix {
             mat.fillNormal(0.0, 0.01);
             System.out.println("Randomized. Normalizing ...");
             mat.normalize();
-            System.out.println("Normalized.");
+            System.out.println("Normalized. Most Similar:");
+            System.out.println(mat.mostSimilar(0, 10));
             matrices.add(mat);
 
             System.out.printf("[ ");

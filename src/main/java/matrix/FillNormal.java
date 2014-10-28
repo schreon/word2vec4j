@@ -5,7 +5,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class FillNormal extends RecursiveAction {
-    public final static int LIMIT = 4096;
+    public final static int LIMIT = 4096 * 4;
 
     private final int start;
     private final int end;
