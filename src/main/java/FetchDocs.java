@@ -63,9 +63,9 @@ public class FetchDocs extends RecursiveAction {
                     while (!counters.isEmpty()) {
                         counters.pop().join();
                     }
-                    if (n % 10000 == 0) {
-                        System.out.printf("Doc #%d %n", n);
-                    }
+                }
+                if (n % 10000 == 0) {
+                    System.out.printf("Doc #%d %n", n);
                 }
                 nextDoc = docQueue.take();
             }

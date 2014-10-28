@@ -63,6 +63,7 @@ public class HuffmanTree implements HuffmanElement {
             iter.remove();
         }
 
+        System.out.printf("Creating leaves%n");
         HuffmanElement left, right;
         while (p.size() > 1) {
             left = p.poll();
@@ -70,20 +71,20 @@ public class HuffmanTree implements HuffmanElement {
             p.add(new HuffmanTree(left.getCount() + right.getCount(), syn1idx, left, right));
             syn1idx += 1;
         }
-        System.out.printf("Created all Leaves");
-
         HuffmanElement root = p.poll();
 
+        System.out.printf("Creating inner nodes%n");
+
         List<List<Integer>> paths = new ArrayList<>(syn0idx);
+
         int s = wordCount.size();
         for (int i = 0; i < s; i++) {
             paths.add(null);
         }
-        System.out.printf("Created all inner Nodes");
 
+        System.out.printf("Encoding paths %n");
         root.encodePath(new ArrayList<Integer>());
 
-        System.out.printf("Encoded all Paths");
         vocabulary.setNum_vocables(syn0idx);
         vocabulary.setNum_nodes(syn1idx);
         return vocabulary;

@@ -1,9 +1,7 @@
 import org.junit.Test;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,11 +30,7 @@ public class TestHuffman {
 
         System.out.printf("Total of %d vocables %n", vocabulary.getNumVocables());
         System.out.printf("Total of %d nodes %n", vocabulary.getNumNodes());
-        FileOutputStream fo = new FileOutputStream("vocabulary.bin");
-        ObjectOutputStream os = new ObjectOutputStream(fo);
-        os.writeObject(vocabulary);
-        os.close();
-        fo.close();
+        vocabulary.saveToFile("vocabulary.bin");
 
         System.out.println("Finished");
     }

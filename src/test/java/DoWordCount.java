@@ -26,12 +26,15 @@ public class DoWordCount {
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
             start = System.nanoTime();
             FetchDocs fetchDocs = new FetchDocs(wordCount, con, offset, offset + num);
-            ForkJoinPool.commonPool().invoke(fetchDocs);
+            ForkJoinPool pool = new ForkJoinPool(6);
+
+            //ForkJoinPool.commonPool().invoke(fetchDocs);
+            pool.invoke(fetchDocs);
+
             end = System.nanoTime();
             res_sec = (double) num / ((end - start) / 1000000000.0);
-            System.out.printf("%.2f%% @ #%d @ %.2f docs/sec - %.2f mio word types %n", (100.0 * offset) / num, offset, res_sec, wordCount.size() / 1000000.0);
+            System.out.printf("%.2f docs/sec - %.2f mio word types %n", res_sec, wordCount.size() / 1000000.0);
             con.close();
-
 
             System.out.println("Finish");
             System.out.println("Remove words which occur less than 5 times.");
