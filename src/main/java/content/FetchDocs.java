@@ -49,8 +49,7 @@ public abstract class FetchDocs extends RecursiveAction {
 
     public abstract RecursiveTask<Integer> createTask(String nextDoc);
 
-    protected void onInterval(int iteration) {
-    }
+    protected void onInterval(int iteration) {}
 
     @Override
     protected void compute() { // compute directly

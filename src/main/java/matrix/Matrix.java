@@ -16,8 +16,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Matrix implements Serializable {
     public final int n;
     public final int m;
-    public FloatBuffer buffer;
     private ByteBuffer byteBuffer;
+    public FloatBuffer buffer;
 
     public Matrix(int n, int m) {
         this.n = n;
@@ -87,8 +87,8 @@ public class Matrix implements Serializable {
     @Override
     public String toString() {
         String s = "";
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
+        for (int i=0; i < n; i++) {
+            for(int j=0; j < m; j++) {
                 s += String.format("%.2f ", get(i, j));
             }
             s += "\n";

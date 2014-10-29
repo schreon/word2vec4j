@@ -10,7 +10,7 @@ import vocabulary.Vocabulary;
 public class TestModel {
     public static void printMostSimilar(String queryWord, int numResults, Vocabulary vocabulary, Matrix syn0) {
         Vocable vocable = vocabulary.get(queryWord);
-        for (Similarity sim : syn0.mostSimilar(vocable.getIndex(), numResults)) {
+        for (Similarity sim : syn0.mostSimilar(vocable.getIndex(), numResults)){
             String hit = vocabulary.getWordByIndex(sim.index);
             System.out.printf("%s : %.2f %n", hit, sim.similarity);
         }

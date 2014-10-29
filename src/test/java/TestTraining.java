@@ -48,18 +48,6 @@ public class TestTraining {
         final String empty = "".intern();
         int alpha;
         class SplitThenTrain extends SplitDocument {
-            FetchDocs(con, offset, offset+num, 500) {
-                @Override
-                public RecursiveTask<Integer> createTask (String nextDoc){
-                    return new SplitThenTrain(nextDoc);
-                }
-
-                @Override
-                protected void onInterval ( int iteration){
-                    // TODO: lower alpha
-                }
-            }
-
             public SplitThenTrain(String docString) {
                 super(docString);
             }
@@ -74,7 +62,17 @@ public class TestTraining {
             }
         }
 
-        FetchDocs fetchDocs = new;
+        FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num, 500) {
+            @Override
+            public RecursiveTask<Integer> createTask(String nextDoc) {
+                return new SplitThenTrain(nextDoc);
+            }
+
+            @Override
+            protected void onInterval(int iteration) {
+                // TODO: lower alpha
+            }
+        };
 
 
         ForkJoinPool pool = new ForkJoinPool();

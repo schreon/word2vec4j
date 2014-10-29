@@ -43,7 +43,7 @@ public class TrainSentence extends RecursiveTask<Integer> {
         for (a = 0; a < syn0.m; a++) {
             work[a] = 0.0f;
         }
-        final int row0 = wordIndex * syn0.m;
+        final int row0 = wordIndex*syn0.m;
         int row1;
 
         final int pathLength = path.length;
@@ -53,7 +53,7 @@ public class TrainSentence extends RecursiveTask<Integer> {
             f = 0.0f;
             for (a = 0; a < syn0.m; a++) {
                 //f += syn0.get(wordIndex, a) * syn1.get(path[b], a);
-                f += syn0.buffer.get(row0 + a) * syn1.buffer.get(row1 + a);
+                f += syn0.buffer.get(row0+a) * syn1.buffer.get(row1+a);
             }
             f = logistic(f);
             if (code[b]) {
@@ -66,7 +66,7 @@ public class TrainSentence extends RecursiveTask<Integer> {
             for (a = 0; a < syn0.m; a++) {
                 //work[a] += g * syn1.get(path[b], a);
                 work[a] += g * syn1.buffer.get(row1 + a);
-                syn1.add(path[b], a, g * syn0.buffer.get(row0 + a));
+                syn1.add(path[b], a, g * syn0.buffer.get(row0+a));
             }
         }
         for (a = 0; a < syn0.m; a++) {
