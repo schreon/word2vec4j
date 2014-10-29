@@ -31,8 +31,16 @@ public class TrainSentence extends RecursiveTask<Integer> {
     }
 
     public static float logistic(final float f) {
-        return 1.0f / (1.0f + (float) Math.exp(-Math.max(-45.0f, Math.min(f, 45.f))));
+        if (f < -45.0f) {
+            return 0.0f;
+        }
+        if (f > 45.0f) {
+            return 1.0f;
+        }
+        return 1.0f / (1.0f + (float) Math.exp(-f));
+        //return (1.0f + (float)Math.tanh(f/2.0f)) / 2.0f; // this is an alternative representation
     }
+
 
     public static void trainPair(final Matrix syn0, final Matrix syn1, final int wordIndex, final int[] path, final boolean[] code, final float[] work, final float alpha) {
         int a, b;
@@ -65,7 +73,7 @@ public class TrainSentence extends RecursiveTask<Integer> {
         }
     }
 
-    public Integer computeDirectly(Matrix syn0, Matrix syn1, String[] tokens, Vocabulary vocabulary, int start, int end, float alpha) {
+    public static Integer computeDirectly(Matrix syn0, Matrix syn1, String[] tokens, Vocabulary vocabulary, int start, int end, float alpha) {
         String token;
         Vocable word;
         Vocable other;

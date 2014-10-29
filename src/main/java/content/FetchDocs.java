@@ -77,7 +77,7 @@ public abstract class FetchDocs extends RecursiveAction {
                     end = System.nanoTime();
                     res_sec = (double) n / ((end - start) / 1000000000.0);
                     words_sec = (w / 1000000.0) / ((end - start) / (1000000000.0));
-                    System.out.printf("Doc #%d @ %.2f docs/sec, %.2f mio words/sec %n", n, res_sec, words_sec);
+                    System.out.printf("Doc #%d @ %.2f docs/sec, %.3f mio words/sec %n", n, res_sec, words_sec);
                 }
                 nextDoc = docQueue.take();
             }
