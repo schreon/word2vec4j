@@ -1,5 +1,6 @@
 import content.FetchDocs;
 import content.SplitDocument;
+import count.CountWords;
 import org.sqlite.JDBC;
 
 import java.io.File;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 public class DoWordCount {
     public static void main(String[] args) {
@@ -24,24 +25,29 @@ public class DoWordCount {
             int offset = 0;
             int num = 2000000;
             System.out.println("Start");
-            long start, end;
-            double res_sec;
+
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
-            start = System.nanoTime();
-            FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num) {
+
+            class SplitThenCount extends SplitDocument {
+                public SplitThenCount(String docString) {
+                    super(docString);
+                }
                 @Override
-                public RecursiveAction createAction(String nextDoc) {
-                    return new SplitDocument(wordCount, nextDoc);
+                public RecursiveTask<Integer> createTask(String[] tokens) {
+                    return new CountWords(wordCount, tokens, 0, tokens.length);
+                }
+            }
+
+            FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num, 10000) {
+                @Override
+                public RecursiveTask<Integer> createTask(String nextDoc) {
+                    return new SplitThenCount(nextDoc);
                 }
             };
             ForkJoinPool pool = new ForkJoinPool();
 
             //ForkJoinPool.commonPool().invoke(fetchDocs);
             pool.invoke(fetchDocs);
-
-            end = System.nanoTime();
-            res_sec = (double) num / ((end - start) / 1000000000.0);
-            System.out.printf("%.2f docs/sec - %.2f mio word types %n", res_sec, wordCount.size() / 1000000.0);
             con.close();
 
             System.out.println("Finish");

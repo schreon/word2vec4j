@@ -1,12 +1,12 @@
 package count;
 
 import java.util.Map;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-public class CountWords extends RecursiveAction {
+public class CountWords extends RecursiveTask<Integer> {
     final static int LIMIT = 512;
     protected static BiFunction<String, Integer, Integer> addIfPresent = new BiFunction<String, Integer, Integer>() {
         @Override
@@ -31,7 +31,7 @@ public class CountWords extends RecursiveAction {
         this.wordMap = wordMap;
     }
 
-    public static void computeDirectly(final Map<String, Integer> wordMap, final String[] tokens, final int start, final int end) {
+    public static Integer computeDirectly(final Map<String, Integer> wordMap, final String[] tokens, final int start, final int end) {
         String word;
         for (int i = start; i < end; i++) {
             word = tokens[i];
@@ -43,13 +43,14 @@ public class CountWords extends RecursiveAction {
                 throw new RuntimeException("Exception for word " + word);
             }
         }
+        return (end - start);
     }
 
     @Override
-    protected void compute() {
+    protected Integer compute() {
         int diff = end - start;
         if (diff <= LIMIT) {
-            computeDirectly(wordMap, tokens, start, end);
+            return computeDirectly(wordMap, tokens, start, end);
         } else {
             int split;
             // Try to make big chunks
@@ -61,6 +62,12 @@ public class CountWords extends RecursiveAction {
             CountWords left = new CountWords(wordMap, tokens, start, split);
             CountWords right = new CountWords(wordMap, tokens, split, end);
             invokeAll(left, right);
+            try {
+                return left.get() + right.get();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
         }
     }
 }

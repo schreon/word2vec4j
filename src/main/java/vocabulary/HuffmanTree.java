@@ -1,6 +1,9 @@
 package vocabulary;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.PriorityQueue;
 
 class HuffmanLeaf implements HuffmanElement {
     private Vocable vocable;
@@ -15,10 +18,10 @@ class HuffmanLeaf implements HuffmanElement {
     }
 
     @Override
-    public void encodePath(List<Integer> parentPath) {
+    public void encodePath(int[] parentPath, boolean[] code) {
+        vocable.setCode(code);
         vocable.setPath(parentPath);
     }
-
 }
 
 public class HuffmanTree implements HuffmanElement {
@@ -54,6 +57,7 @@ public class HuffmanTree implements HuffmanElement {
         Iterator<Map.Entry<String, Integer>> iter = wordCount.entrySet().iterator();
         Vocabulary vocabulary = new Vocabulary();
         Map.Entry<String, Integer> entry;
+        System.out.printf("Creating leaves%n");
         while (iter.hasNext()) {
             entry = iter.next();
             Vocable vocable = new Vocable();
@@ -65,8 +69,8 @@ public class HuffmanTree implements HuffmanElement {
             iter.remove();
         }
 
-        System.out.printf("Creating leaves%n");
         HuffmanElement left, right;
+        System.out.printf("Creating inner nodes%n");
         while (p.size() > 1) {
             left = p.poll();
             right = p.poll();
@@ -75,17 +79,8 @@ public class HuffmanTree implements HuffmanElement {
         }
         HuffmanElement root = p.poll();
 
-        System.out.printf("Creating inner nodes%n");
-
-        List<List<Integer>> paths = new ArrayList<>(syn0idx);
-
-        int s = wordCount.size();
-        for (int i = 0; i < s; i++) {
-            paths.add(null);
-        }
-
         System.out.printf("Encoding paths %n");
-        root.encodePath(new ArrayList<Integer>());
+        root.encodePath(new int[0], new boolean[0]);
 
         vocabulary.setNum_vocables(syn0idx);
         vocabulary.setNum_nodes(syn1idx);
@@ -98,12 +93,18 @@ public class HuffmanTree implements HuffmanElement {
     }
 
     @Override
-    public void encodePath(List<Integer> parentPath) {
-        List<Integer> leftPath = new ArrayList<>(parentPath.size());
-        leftPath.addAll(parentPath);
-        leftPath.add(index);
-        parentPath.add(index); // reuse this object
-        left.encodePath(leftPath);
-        right.encodePath(parentPath);
+    public void encodePath(final int[] parentPath, final boolean[] parentCode) {
+        final int length = parentPath.length;
+        final int[] newPath = new int[length + 1];
+        final boolean[] leftCode = new boolean[length + 1];
+        final boolean[] rightCode = new boolean[length + 1];
+        System.arraycopy(parentPath, 0, newPath, 0, length);
+        System.arraycopy(parentCode, 0, leftCode, 0, length);
+        System.arraycopy(parentCode, 0, rightCode, 0, length);
+        newPath[length] = index;
+        leftCode[length] = false;
+        rightCode[length] = true;
+        left.encodePath(newPath, leftCode);
+        right.encodePath(newPath, rightCode);
     }
 }

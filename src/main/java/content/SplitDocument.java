@@ -1,27 +1,30 @@
 package content;
 
-import count.CountWords;
-
-import java.util.Map;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Created by schreon on 10/28/14.
  */
-public class SplitDocument extends RecursiveAction {
+public abstract class SplitDocument extends RecursiveTask<Integer> {
 
-    private final Map<String, Integer> wordMap;
     private final String docString;
 
-    public SplitDocument(final Map<String, Integer> wordMap, final String docString) {
-        this.wordMap = wordMap;
+    public SplitDocument(final String docString) {
         this.docString = docString;
     }
 
+    public abstract RecursiveTask<Integer> createTask(String[] tokens);
+
     @Override
-    protected void compute() {
+    protected Integer compute() {
         String[] tokens = docString.split(" ");
-        ForkJoinTask.invokeAll(new CountWords(wordMap, tokens, 0, tokens.length));
+        RecursiveTask<Integer> task = createTask(tokens);
+        ForkJoinTask.invokeAll(task);
+        try {
+            return task.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

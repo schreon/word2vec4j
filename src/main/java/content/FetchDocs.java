@@ -7,18 +7,21 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 
-public abstract class FetchDocs<DocumentAction extends RecursiveAction> extends RecursiveAction {
+public abstract class FetchDocs extends RecursiveAction {
     private static final String sentinel = new String();
     protected final Connection con;
     protected final int start;
     protected final int end;
+    protected final int logInterval;
 
-    public FetchDocs(final Connection con, final int start, final int end) {
+    public FetchDocs(final Connection con, final int start, final int end, final int logInterval) {
         this.con = con;
         this.start = start;
         this.end = end;
+        this.logInterval = logInterval;
     }
 
     public static void startDocumentProducer(final ArrayBlockingQueue<String> blockingQueue, final Connection con, final int start, final int end) throws Exception {
@@ -44,7 +47,7 @@ public abstract class FetchDocs<DocumentAction extends RecursiveAction> extends 
         }.start();
     }
 
-    public abstract DocumentAction createAction(String nextDoc);
+    public abstract RecursiveTask<Integer> createTask(String nextDoc);
 
     @Override
     protected void compute() { // compute directly
@@ -53,25 +56,39 @@ public abstract class FetchDocs<DocumentAction extends RecursiveAction> extends 
             startDocumentProducer(docQueue, con, start, end);
             String nextDoc = docQueue.take();
             int n = 0;
-            Deque<DocumentAction> actions = new ArrayDeque<>(128);
-            DocumentAction action;
+            long w = n;
+            Deque<RecursiveTask<Integer>> tasks = new ArrayDeque<>(128);
+            RecursiveTask<Integer> task;
+            long start, end;
+            double res_sec, words_sec;
+            start = System.nanoTime();
             while (nextDoc != sentinel) {
-                action = createAction(nextDoc);
-                actions.add(action);
+                task = createTask(nextDoc);
+                tasks.add(task);
                 n += 1;
                 if (n % 64 == 0) {
-                    invokeAll(actions);
-                    actions.clear();
+                    invokeAll(tasks);
+                    for (RecursiveTask<Integer> t : tasks) {
+                        w += t.get();
+                    }
+                    tasks.clear();
                 }
-                if (n % 10000 == 0) {
-                    System.out.printf("Doc #%d %n", n);
+                if (n % logInterval == 0) {
+                    end = System.nanoTime();
+                    res_sec = (double) n / ((end - start) / 1000000000.0);
+                    words_sec = (w / 1000000.0) / ((end - start) / (1000000000.0));
+                    System.out.printf("Doc #%d @ %.2f docs/sec, %.2f mio words/sec %n", n, res_sec, words_sec);
                 }
                 nextDoc = docQueue.take();
             }
-            if (!actions.isEmpty()) {
-                invokeAll(actions);
+            if (!tasks.isEmpty()) {
+                invokeAll(tasks);
             }
-            actions.clear();
+            tasks.clear();
+            end = System.nanoTime();
+            res_sec = (double) n / ((end - start) / 1000000000.0);
+            words_sec = (w / 1000000.0) / ((end - start) / (1000000000.0));
+            System.out.printf("Doc #%d @ %.2f docs/sec, %.2f mio words/sec %n", n, res_sec, words_sec);
             System.out.println("Read sentinel, finished!");
         } catch (Exception e) {
             throw new RuntimeException(e);

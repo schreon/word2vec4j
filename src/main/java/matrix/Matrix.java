@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -29,6 +30,7 @@ public class Matrix implements Serializable {
         while (!queue.isEmpty()) {
             sims.add(queue.remove());
         }
+        Collections.reverse(sims);
         return sims;
     }
 
@@ -61,6 +63,11 @@ public class Matrix implements Serializable {
 
     public void put(final int i, final int j, final float val) {
         matrix.put(i * m + j, val);
+    }
+
+    public void add(final int i, final int j, final float val) {
+        final int idx = i * m + j;
+        matrix.put(idx, matrix.get(idx) + val);
     }
 
     public void normalize(ForkJoinPool pool) {

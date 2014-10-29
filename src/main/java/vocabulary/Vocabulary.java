@@ -2,6 +2,7 @@ package vocabulary;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Vocabulary extends HashMap<String, Vocable> implements Serializable {
 
@@ -48,5 +49,14 @@ public class Vocabulary extends HashMap<String, Vocable> implements Serializable
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getWordByIndex(int index) {
+        for (Map.Entry<String, Vocable> entry : this.entrySet()) {
+            if (entry.getValue().getIndex() == index) {
+                return entry.getKey();
+            }
+        }
+        throw new RuntimeException("No word found for index " + index);
     }
 }

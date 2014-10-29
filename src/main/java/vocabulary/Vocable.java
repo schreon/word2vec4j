@@ -1,18 +1,18 @@
 package vocabulary;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class Vocable implements Serializable {
     private int index;
     private int count;
-    private List<Integer> path;
+    private int[] path;
+    private boolean[] code;
 
-    public List<Integer> getPath() {
+    public int[] getPath() {
         return path;
     }
 
-    public void setPath(List<Integer> path) {
+    public void setPath(final int[] path) {
         this.path = path;
     }
 
@@ -30,5 +30,13 @@ public class Vocable implements Serializable {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public boolean[] getCode() {
+        return code;
+    }
+
+    public void setCode(boolean[] code) {
+        this.code = code;
     }
 }
