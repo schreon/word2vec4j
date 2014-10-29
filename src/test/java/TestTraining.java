@@ -10,7 +10,6 @@ import vocabulary.Vocabulary;
 
 import java.io.File;
 import java.sql.Connection;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -47,28 +46,35 @@ public class TestTraining {
         Connection con = JDBC.createConnection(wikiUrl, new Properties());
 
         final String empty = "".intern();
-
+        int alpha;
         class SplitThenTrain extends SplitDocument {
+            FetchDocs(con, offset, offset+num, 500) {
+                @Override
+                public RecursiveTask<Integer> createTask (String nextDoc){
+                    return new SplitThenTrain(nextDoc);
+                }
+
+                @Override
+                protected void onInterval ( int iteration){
+                    // TODO: lower alpha
+                }
+            }
+
             public SplitThenTrain(String docString) {
                 super(docString);
             }
             @Override
             public RecursiveTask<Integer> createTask(String[] tokens) {
                 for (int i=0; i < tokens.length; i++) {
-                    if (!vocabulary.containsKey(tokens[i].intern())) {
+                    if (!vocabulary.containsKey(tokens[i])) {
                         tokens[i] = empty;
                     }
                 }
-                return new TrainSentence(syn0, syn1, tokens, vocabulary, 0, tokens.length, 0.025f); // TODO: dynamic learn rate
+                return new TrainSentence(syn0, syn1, tokens, vocabulary, 0, tokens.length, 0.001f); // TODO: dynamic learn rate
             }
         }
 
-        FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num, 500) {
-            @Override
-            public RecursiveTask<Integer> createTask(String nextDoc) {
-                return new SplitThenTrain(nextDoc);
-            }
-        };
+        FetchDocs fetchDocs = new;
 
 
         ForkJoinPool pool = new ForkJoinPool();
@@ -81,6 +87,9 @@ public class TestTraining {
 
         System.out.println("Finished Training.");
 
+        syn0.saveBufferToFile("syn0.bin");
+        syn1.saveBufferToFile("syn1.bin");
+
         syn0.normalize();
 
         printMostSimilar("haus", 10, vocabulary, syn0);
@@ -91,7 +100,5 @@ public class TestTraining {
         System.out.println("-------------");
         printMostSimilar("chemisch", 10, vocabulary, syn0);
         System.out.println("-------------");
-
-
     }
 }

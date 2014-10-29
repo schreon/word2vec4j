@@ -49,6 +49,9 @@ public abstract class FetchDocs extends RecursiveAction {
 
     public abstract RecursiveTask<Integer> createTask(String nextDoc);
 
+    protected void onInterval(int iteration) {
+    }
+
     @Override
     protected void compute() { // compute directly
         try {
@@ -56,7 +59,7 @@ public abstract class FetchDocs extends RecursiveAction {
             startDocumentProducer(docQueue, con, start, end);
             String nextDoc = docQueue.take();
             int n = 0;
-            long w = n;
+            long w = 0;
             Deque<RecursiveTask<Integer>> tasks = new ArrayDeque<>(128);
             RecursiveTask<Integer> task;
             long start, end;
@@ -78,6 +81,7 @@ public abstract class FetchDocs extends RecursiveAction {
                     res_sec = (double) n / ((end - start) / 1000000000.0);
                     words_sec = (w / 1000000.0) / ((end - start) / (1000000000.0));
                     System.out.printf("Doc #%d @ %.2f docs/sec, %.3f mio words/sec %n", n, res_sec, words_sec);
+                    onInterval(n);
                 }
                 nextDoc = docQueue.take();
             }

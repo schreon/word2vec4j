@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TrainSentence extends RecursiveTask<Integer> {
 
     public static final int LIMIT = 512;
+
     final static String empty = "".intern();
     final static int wSize = 5;
     final Matrix syn0;
@@ -31,29 +32,28 @@ public class TrainSentence extends RecursiveTask<Integer> {
     }
 
     public static float logistic(final float f) {
-        if (f < -45.0f) {
-            return 0.0f;
-        }
-        if (f > 45.0f) {
-            return 1.0f;
-        }
-        return 1.0f / (1.0f + (float) Math.exp(-f));
+        return 1.0f / (1.0f + (float) Math.exp(-Math.max(-45.0f, Math.min(f, 45.0f))));
         //return (1.0f + (float)Math.tanh(f/2.0f)) / 2.0f; // this is an alternative representation
     }
 
 
     public static void trainPair(final Matrix syn0, final Matrix syn1, final int wordIndex, final int[] path, final boolean[] code, final float[] work, final float alpha) {
         int a, b;
-        int syn1idx;
         float f, g;
         for (a = 0; a < syn0.m; a++) {
             work[a] = 0.0f;
         }
-        for (b = 0; b < path.length; b++) {
-            syn1idx = path[b];
+        final int row0 = wordIndex * syn0.m;
+        int row1;
+
+        final int pathLength = path.length;
+        for (b = 0; b < pathLength; b++) {
+            row1 = path[b] * syn1.m;
+
             f = 0.0f;
             for (a = 0; a < syn0.m; a++) {
-                f += syn0.get(wordIndex, a) * syn1.get(syn1idx, a);
+                //f += syn0.get(wordIndex, a) * syn1.get(path[b], a);
+                f += syn0.buffer.get(row0 + a) * syn1.buffer.get(row1 + a);
             }
             f = logistic(f);
             if (code[b]) {
@@ -64,8 +64,9 @@ public class TrainSentence extends RecursiveTask<Integer> {
                 g = (1.0f - f) * alpha;
             }
             for (a = 0; a < syn0.m; a++) {
-                work[a] += g * syn1.get(syn1idx, a);
-                syn1.add(syn1idx, a, g * syn0.get(wordIndex, a));
+                //work[a] += g * syn1.get(path[b], a);
+                work[a] += g * syn1.buffer.get(row1 + a);
+                syn1.add(path[b], a, g * syn0.buffer.get(row0 + a));
             }
         }
         for (a = 0; a < syn0.m; a++) {
@@ -83,16 +84,17 @@ public class TrainSentence extends RecursiveTask<Integer> {
         int reducedWindow;
         final float[] work = new float[syn0.m];
         for (int i = start; i < end; i++) {
-            token = tokens[i].intern();
-            if (token != empty) {
+            token = tokens[i];
+            if (!token.equals(empty)) {
                 reducedWindow = ThreadLocalRandom.current().nextInt(wSize) + 1;
                 rightBound = Math.min(upperBound, i + reducedWindow);
                 word = vocabulary.get(token);
                 wordIndex = word.getIndex();
                 for (int w = i + 1; w < rightBound; w++) {
-                    token = tokens[w].intern();
-                    if (token != empty) {
+                    token = tokens[w];
+                    if (!token.equals(empty)) {
                         other = vocabulary.get(token);
+                        // train in both directions
                         trainPair(syn0, syn1, wordIndex, other.getPath(), other.getCode(), work, alpha);
                         trainPair(syn0, syn1, other.getIndex(), word.getPath(), word.getCode(), work, alpha);
                     }
@@ -108,7 +110,13 @@ public class TrainSentence extends RecursiveTask<Integer> {
         if (diff <= LIMIT) {
             return computeDirectly(syn0, syn1, tokens, vocabulary, start, end, alpha);
         } else {
-            int split = (start + end) / 2;
+            int split;
+            // Try to make big chunks
+            if (diff < 2 * LIMIT) {
+                split = start + LIMIT;
+            } else {
+                split = (start + end) / 2;
+            }
             TrainSentence left = new TrainSentence(syn0, syn1, tokens, vocabulary, start, split, alpha);
             TrainSentence right = new TrainSentence(syn0, syn1, tokens, vocabulary, split, end, alpha);
             invokeAll(left, right);
