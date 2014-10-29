@@ -1,4 +1,5 @@
 import count.FetchDocs;
+import count.SplitDocument;
 import org.sqlite.JDBC;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 public class DoWordCount {
     public static void main(String[] args) {
@@ -26,7 +28,12 @@ public class DoWordCount {
             double res_sec;
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
             start = System.nanoTime();
-            FetchDocs fetchDocs = new FetchDocs(wordCount, con, offset, offset + num);
+            FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num) {
+                @Override
+                public RecursiveAction createAction(String nextDoc) {
+                    return new SplitDocument(wordCount, nextDoc);
+                }
+            };
             ForkJoinPool pool = new ForkJoinPool();
 
             //ForkJoinPool.commonPool().invoke(fetchDocs);
