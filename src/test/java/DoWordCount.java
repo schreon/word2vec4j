@@ -23,7 +23,7 @@ public class DoWordCount {
 
             final Map<String, Integer> wordCount = new ConcurrentHashMap<>(8000000);
             int offset = 0;
-            int num = 2000000;
+            int maxDocs = 2000000;
             System.out.println("Start");
 
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
@@ -38,7 +38,7 @@ public class DoWordCount {
                 }
             }
 
-            FetchDocs fetchDocs = new FetchDocs(con, offset, offset + num, 10000) {
+            FetchDocs fetchDocs = new FetchDocs(con, offset, offset + maxDocs, 10000) {
                 @Override
                 public RecursiveTask<Integer> createTask(String nextDoc) {
                     return new SplitThenCount(nextDoc);

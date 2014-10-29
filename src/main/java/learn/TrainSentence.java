@@ -108,13 +108,7 @@ public class TrainSentence extends RecursiveTask<Integer> {
         if (diff <= LIMIT) {
             return computeDirectly(syn0, syn1, tokens, vocabulary, start, end, alpha);
         } else {
-            int split;
-            // Try to make big chunks
-            if (diff < 2 * LIMIT) {
-                split = start + LIMIT;
-            } else {
-                split = (start + end) / 2;
-            }
+            int split = (start + end) / 2;
             TrainSentence left = new TrainSentence(syn0, syn1, tokens, vocabulary, start, split, alpha);
             TrainSentence right = new TrainSentence(syn0, syn1, tokens, vocabulary, split, end, alpha);
             invokeAll(left, right);
