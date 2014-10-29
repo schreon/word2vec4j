@@ -3,3 +3,6 @@ build
 gradle
 .gradle
 *.iml
+*.bin
+*.class
+*.log
