@@ -1,5 +1,5 @@
-import count.FetchDocs;
-import count.SplitDocument;
+import content.FetchDocs;
+import content.SplitDocument;
 import org.sqlite.JDBC;
 
 import java.io.File;

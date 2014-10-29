@@ -1,6 +1,9 @@
-package count;
+package content;
+
+import count.CountWords;
 
 import java.util.Map;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -19,6 +22,6 @@ public class SplitDocument extends RecursiveAction {
     @Override
     protected void compute() {
         String[] tokens = docString.split(" ");
-        invokeAll(new CountWords(wordMap, tokens, 0, tokens.length));
+        ForkJoinTask.invokeAll(new CountWords(wordMap, tokens, 0, tokens.length));
     }
 }
