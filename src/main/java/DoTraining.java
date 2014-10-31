@@ -42,7 +42,7 @@ public class DoTraining {
             final String wikiUrl = "jdbc:sqlite:" + (new File("/home/schreon/Downloads/wiki.db").toURI().toURL());
 
             int offset = 0;
-            int num = 5000;
+            int num = 50000;
             System.out.println("Start");
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
 
@@ -53,7 +53,7 @@ public class DoTraining {
                     return new TrainWorkbench(finalVecSize, syn0, syn1);
                 }
             };
-            TrainDocument.LIMIT = 16;
+            TrainDocument.LIMIT = 64;
 
             int alpha;
             class SplitThenTrain extends SplitDocument {

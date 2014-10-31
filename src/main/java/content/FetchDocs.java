@@ -99,7 +99,7 @@ public abstract class FetchDocs extends RecursiveAction {
             res_sec = (double) n / ((endTime - startTime) / 1000000000.0);
             words_sec = (w / 1000.0) / ((endTime - startTime) / (1000000000.0));
             System.out.printf("Doc #%d @ %.2f docs/sec, %.2f k words/sec %n", n, res_sec, words_sec);
-            System.out.println("Read sentinel, finished!");
+            System.out.printf("total of %d words %n", w);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

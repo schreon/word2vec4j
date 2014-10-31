@@ -6,6 +6,9 @@ import vocabulary.Vocable;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Recursive task which trains the given neural network weight matrices given a document consisting of words.
+ */
 public class TrainDocument extends RecursiveTask<Integer> {
 
     public static int LIMIT;
@@ -17,6 +20,13 @@ public class TrainDocument extends RecursiveTask<Integer> {
     final ObjectPool<TrainWorkbench> wbPool;
     final Vocable[] words;
 
+    /**
+     * @param wbPool A workbench pool.
+     * @param words  The complete word array.
+     * @param start  The starting index.
+     * @param end    The ending index.
+     * @param alpha  The current learning rate.
+     */
     public TrainDocument(ObjectPool<TrainWorkbench> wbPool, final Vocable[] words, int start, int end, float alpha) {
         this.wbPool = wbPool;
         this.words = words;
@@ -25,23 +35,39 @@ public class TrainDocument extends RecursiveTask<Integer> {
         this.alpha = alpha;
     }
 
+    /**
+     * Computes the logistic sigmoig transfer function.
+     *
+     * @param f the net output
+     * @return the transformed net output
+     */
     public static float logistic(float f) {
         return 1.0f / (1.0f + (float) Math.exp(-Math.max(-45.0f, Math.min(f, 45.0f))));
     }
 
+    /**
+     * Fills the given vector with zeros.
+     *
+     * @param vec the vector to fill with zeros.
+     */
     public static void fillZero(float[] vec) {
-        for (int a=0; a < vec.length; a++) {
+        for (int a = 0; a < vec.length; a++) {
             vec[a] = 0.0f;
         }
     }
 
+    /**
+     * Calculates the gradient for one element in the target word's path.
+     *
+     * @param wb the current workbench object
+     */
     public static void trainPath(TrainWorkbench wb) {
-        wb.syn1buf.position(wb.path[wb.b]*wb.vectorLength);
+        wb.syn1buf.position(wb.path[wb.b] * wb.vectorLength);
         wb.syn1buf.get(wb.syn1);
 
         wb.layer1 = 0.0f;
 
-        for (wb.i=0; wb.i < wb.vectorLength; wb.i++) {
+        for (wb.i = 0; wb.i < wb.vectorLength; wb.i++) {
             wb.layer1 += wb.syn0[wb.i] * wb.syn1[wb.i];
         }
 
@@ -58,12 +84,17 @@ public class TrainDocument extends RecursiveTask<Integer> {
             wb.layer0[wb.i] += wb.gradient * wb.syn1[wb.i];
             wb.syn1[wb.i] += wb.gradient * wb.syn0[wb.i];
         }
-        wb.syn1buf.position(wb.path[wb.b]*wb.vectorLength);
+        wb.syn1buf.position(wb.path[wb.b] * wb.vectorLength);
         wb.syn1buf.put(wb.syn1);
     }
 
+    /**
+     * Iterates over the target word's path and calls trainPath which actually computes each probability.
+     *
+     * @param wb the current workbench object
+     */
     public static void trainOther(TrainWorkbench wb) {
-        wb.otherWord = wb. words[wb.otherPos];
+        wb.otherWord = wb.words[wb.otherPos];
         if ((wb.pos != wb.otherPos) && (wb.otherWord != null)) {
             wb.path = wb.otherWord.getPath();
             wb.code = wb.otherWord.getCode();
@@ -73,20 +104,26 @@ public class TrainDocument extends RecursiveTask<Integer> {
             for (wb.b = 0; wb.b < wb.path.length; wb.b++) {
                 trainPath(wb);
             }
-            for (wb.i=0; wb.i < wb.vectorLength; wb.i++) {
+            for (wb.i = 0; wb.i < wb.vectorLength; wb.i++) {
                 wb.syn0[wb.i] += wb.layer0[wb.i];
             }
-            wb.syn0buf.position(wb.wordIndex*wb.vectorLength);
+            wb.syn0buf.position(wb.wordIndex * wb.vectorLength);
             wb.syn0buf.put(wb.syn0);
         }
 
     }
 
+    /**
+     * Trains the word at the current position. Randomizes the window and chooses the words left and right of the
+     * center word. Calls trainOther which computes the training step between the pair.
+     *
+     * @param wb the current workbench object
+     */
     public static void trainWord(TrainWorkbench wb) {
         wb.word = wb.words[wb.pos];
         if (wb.word == null) return;
         wb.wordIndex = wb.word.getIndex();
-        wb.syn0buf.position(wb.wordIndex*wb.vectorLength);
+        wb.syn0buf.position(wb.wordIndex * wb.vectorLength);
         wb.syn0buf.get(wb.syn0);
 
         wb.reducedWindow = ThreadLocalRandom.current().nextInt(wSize);
@@ -97,6 +134,16 @@ public class TrainDocument extends RecursiveTask<Integer> {
         }
     }
 
+    /**
+     * Iterates over an array of words and trains the neural network on them.
+     *
+     * @param wb    the current workbench object
+     * @param words the complete string of words
+     * @param start the starting index for this worker
+     * @param end   the end index for this worker
+     * @param alpha the current learningrate
+     * @return the number of words that have actually been calculated (omitting out of vocabulary words)
+     */
     public static Integer computeDirectly(TrainWorkbench wb, Vocable[] words, int start, int end, float alpha) {
         wb.words = words;
         wb.alpha = alpha;
@@ -108,6 +155,12 @@ public class TrainDocument extends RecursiveTask<Integer> {
         return wb.n;
     }
 
+    /**
+     * If the number of words is larger than LIMIT, the computation is forked in 2 halves. If it is smaller or equal,
+     * the computation is processed directly.
+     *
+     * @return number of trained words (without out-of-vocabulary words)
+     */
     @Override
     protected Integer compute() {
         int diff = end - start;

@@ -23,7 +23,7 @@ public class DoWordCount {
 
             final Map<String, Integer> wordCount = new ConcurrentHashMap<>(8000000);
             int offset = 0;
-            int maxDocs = 50000;
+            int maxDocs = 1700000;
             System.out.println("Start");
 
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
