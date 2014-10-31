@@ -3,21 +3,14 @@ package count;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 
 public class CountWords extends RecursiveTask<Integer> {
-    final static int LIMIT = 512;
+    public final int LIMIT = 512;
     protected static BiFunction<String, Integer, Integer> addIfPresent = new BiFunction<String, Integer, Integer>() {
         @Override
         public Integer apply(String s, Integer integer) {
-            return integer + 1;
-        }
-    };
-    protected static Function<String, Integer> setIfAbsent = new Function<String, Integer>() {
-        @Override
-        public Integer apply(String s) {
-            return 0;
+            return Math.min(Integer.MAX_VALUE-1, integer) + 1;
         }
     };
     final int start, end;
@@ -36,7 +29,7 @@ public class CountWords extends RecursiveTask<Integer> {
         for (int i = start; i < end; i++) {
             word = tokens[i];
             try {
-                wordMap.computeIfAbsent(word, setIfAbsent);
+                wordMap.putIfAbsent(word, 0);
                 wordMap.computeIfPresent(word, addIfPresent);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -46,16 +39,20 @@ public class CountWords extends RecursiveTask<Integer> {
         return (end - start);
     }
 
+    public int getLIMIT() {
+        return LIMIT;
+    }
+
     @Override
     protected Integer compute() {
         int diff = end - start;
-        if (diff <= LIMIT) {
+        if (diff <= getLIMIT()) {
             return computeDirectly(wordMap, tokens, start, end);
         } else {
             int split;
             // Try to make big chunks
-            if (diff < 2 * LIMIT) {
-                split = start + LIMIT;
+            if (diff < 2 * getLIMIT()) {
+                split = start + getLIMIT();
             } else {
                 split = (start + end) / 2;
             }

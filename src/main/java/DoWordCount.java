@@ -23,7 +23,7 @@ public class DoWordCount {
 
             final Map<String, Integer> wordCount = new ConcurrentHashMap<>(8000000);
             int offset = 0;
-            int maxDocs = 2000000;
+            int maxDocs = 50000;
             System.out.println("Start");
 
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
@@ -52,6 +52,8 @@ public class DoWordCount {
 
             System.out.println("Finish");
             System.out.println("Remove words which occur less than 5 times.");
+
+            int all = wordCount.size();
             // remove all words which occur less than 5 times
             Iterator<Map.Entry<String, Integer>> iter = wordCount.entrySet().iterator();
             Map.Entry<String, Integer> entry;
@@ -61,7 +63,7 @@ public class DoWordCount {
                     iter.remove();
                 }
             }
-            System.out.printf("%.2f mio word types remaining. %n", wordCount.size() / 1000000.0);
+            System.out.printf("%d of %d word types remaining. %n", wordCount.size(), all);
             FileOutputStream fo = new FileOutputStream("wordcount.bin");
             ObjectOutputStream os = new ObjectOutputStream(fo);
             os.writeObject(wordCount);

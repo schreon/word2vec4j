@@ -57,8 +57,13 @@ public class Matrix implements Serializable {
         pool.invoke(new FillNormal(this.buffer, 0, n * m, loc, std));
     }
 
-    public void initMatrix() {
+    public void initDirectBuffer() {
         byteBuffer = ByteBuffer.allocateDirect(n * m * 4).order(ByteOrder.nativeOrder());
+        buffer = byteBuffer.asFloatBuffer();
+    }
+
+    public void initBuffer() {
+        byteBuffer = ByteBuffer.allocate(n * m * 4).order(ByteOrder.nativeOrder());
         buffer = byteBuffer.asFloatBuffer();
     }
 

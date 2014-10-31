@@ -39,4 +39,9 @@ public class Vocable implements Serializable {
     public void setCode(boolean[] code) {
         this.code = code;
     }
+
+    @Override
+    public String toString() {
+        return "Vocable{}";
+    }
 }

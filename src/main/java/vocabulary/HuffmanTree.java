@@ -54,6 +54,7 @@ public class HuffmanTree implements HuffmanElement {
         });
         int syn0idx = 0;
         int syn1idx = 0;
+        String[] index2word = new String[n];
         Iterator<Map.Entry<String, Integer>> iter = wordCount.entrySet().iterator();
         Vocabulary vocabulary = new Vocabulary();
         Map.Entry<String, Integer> entry;
@@ -65,6 +66,7 @@ public class HuffmanTree implements HuffmanElement {
             vocable.setIndex(syn0idx);
             vocabulary.put(entry.getKey(), vocable);
             p.add(new HuffmanLeaf(vocable));
+            index2word[syn0idx] = entry.getKey();
             syn0idx += 1;
             iter.remove();
         }
@@ -84,6 +86,7 @@ public class HuffmanTree implements HuffmanElement {
 
         vocabulary.setNum_vocables(syn0idx);
         vocabulary.setNum_nodes(syn1idx);
+        vocabulary.setIndex2word(index2word);
         return vocabulary;
     }
 
