@@ -36,7 +36,8 @@ public class TrainDocument extends RecursiveTask<Integer> {
     }
 
     /**
-     * Computes the logistic sigmoig transfer function.
+     * Computes the logistic sigmoid transfer function.
+     * See http://en.wikipedia.org/wiki/Logistic_function
      *
      * @param f the net output
      * @return the transformed net output

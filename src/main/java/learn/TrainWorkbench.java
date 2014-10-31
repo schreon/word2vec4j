@@ -6,7 +6,7 @@ import vocabulary.Vocable;
 import java.nio.FloatBuffer;
 
 /**
- * Created by schreon on 10/31/14.
+ * A workbench object holding fields that are necessary during computation. Avoids frequent reallocation.
  */
 public class TrainWorkbench {
 

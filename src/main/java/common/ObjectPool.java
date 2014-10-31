@@ -13,7 +13,7 @@ public abstract class ObjectPool<T>
 
     /**
      * Gets the next free object from the pool. If the pool doesn't contain any objects,
-     * a new object will be created and given to the caller of this method back.
+     * a new object will be created and given to the caller of this method.
      *
      * @return T borrowed object
      */
