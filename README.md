@@ -15,4 +15,7 @@ It yields competitive results when compared to gensim when applied to the first 
 </table>
 
 
-This project is currently just a proof-of-concept. It will be refined to a full-fledged library in the future. Stay tuned.
+This project is currently just a proof-of-concept.
+Currently there are still paths to local files and folders, the tests are crappy, it lacks documentation, and so on ...
+It is really raw.
+But it will be refined to a full-fledged library in the future. Stay tuned!
