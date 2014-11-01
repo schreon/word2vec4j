@@ -1,6 +1,6 @@
 This is a prototypal implementation of Continuous Skip-gram Models (CSGM) using plain Java and the Fork/Join framework.
 It has been developed in the scope of a student project at [Hochschule der Medien Stuttgart](https://www.hdm-stuttgart.de/). 
-It yields competitive results when compared to gensim when applied to the first 50 000 articles of the german wikipedia:
+It yields competitive results when compared to gensim when applied to the first 50k articles of the german wikipedia:
 
 
 <table>
