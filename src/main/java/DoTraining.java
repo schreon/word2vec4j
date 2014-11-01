@@ -27,8 +27,8 @@ public class DoTraining {
 
     public static void main(String[] args) {
         try {
-            int vecSize = 128;
-            final Vocabulary vocabulary = Vocabulary.loadFromFile("vocabulary.bin");
+            int vecSize = 100;
+            final Vocabulary vocabulary = Vocabulary.loadFromFile("vocabulary.50k.bin");
             final Matrix syn0 = new Matrix(vocabulary.getNumVocables(), vecSize);
             final Matrix syn1 = new Matrix(vocabulary.getNumNodes(), vecSize);
 
@@ -53,7 +53,7 @@ public class DoTraining {
                     return new TrainWorkbench(finalVecSize, syn0, syn1);
                 }
             };
-            TrainDocument.LIMIT = 64;
+            TrainDocument.LIMIT = 128;
 
             int alpha;
             class SplitThenTrain extends SplitDocument {

@@ -23,7 +23,7 @@ public class DoWordCount {
 
             final Map<String, Integer> wordCount = new ConcurrentHashMap<>(8000000);
             int offset = 0;
-            int maxDocs = 1700000;
+            int maxDocs = 50000;
             System.out.println("Start");
 
             Connection con = JDBC.createConnection(wikiUrl, new Properties());
@@ -64,7 +64,7 @@ public class DoWordCount {
                 }
             }
             System.out.printf("%d of %d word types remaining. %n", wordCount.size(), all);
-            FileOutputStream fo = new FileOutputStream("wordcount.bin");
+            FileOutputStream fo = new FileOutputStream("wordcount.50k.bin");
             ObjectOutputStream os = new ObjectOutputStream(fo);
             os.writeObject(wordCount);
 

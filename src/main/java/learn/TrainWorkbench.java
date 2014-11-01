@@ -16,22 +16,11 @@ public class TrainWorkbench {
     public final float[] syn1;
     public final FloatBuffer syn0buf;
     public final FloatBuffer syn1buf;
-
     public boolean[] code;
     public int[] path;
-    public int wordIndex;
-    public int leftBound;
-    public int rightBound;
-    public int reducedWindow;
-    public int n;
-    public int pos, b, i;
-    public float layer1, gradient;
-    public int otherPos;
-
     public Vocable word;
     public Vocable otherWord;
     public Vocable[] words;
-    public float alpha;
 
     public TrainWorkbench(int vectorLength, Matrix syn0matrix, Matrix syn1matrix) {
 

@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DoHuffman {
     public static void main(String[] args) {
         try {
-            FileInputStream fi = new FileInputStream("wordcount.bin");
+            FileInputStream fi = new FileInputStream("wordcount.50k.bin");
             ObjectInputStream is = new ObjectInputStream(fi);
             Map<String, Integer> wordCount = (ConcurrentHashMap<String, Integer>) is.readObject();
             is.close();
@@ -27,7 +27,7 @@ public class DoHuffman {
 
             System.out.printf("Total of %d vocables %n", vocabulary.getNumVocables());
             System.out.printf("Total of %d nodes %n", vocabulary.getNumNodes());
-            vocabulary.saveToFile("vocabulary.bin");
+            vocabulary.saveToFile("vocabulary.50k.bin");
 
             System.out.println("Finished");
         } catch (Exception e) {

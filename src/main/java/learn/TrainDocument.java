@@ -52,86 +52,72 @@ public class TrainDocument extends RecursiveTask<Integer> {
      * @param vec the vector to fill with zeros.
      */
     public static void fillZero(float[] vec) {
-        for (int a = 0; a < vec.length; a++) {
-            vec[a] = 0.0f;
-        }
-    }
-
-    /**
-     * Calculates the gradient for one element in the target word's path.
-     *
-     * @param wb the current workbench object
-     */
-    public static void trainPath(TrainWorkbench wb) {
-        wb.syn1buf.position(wb.path[wb.b] * wb.vectorLength);
-        wb.syn1buf.get(wb.syn1);
-
-        wb.layer1 = 0.0f;
-
-        for (wb.i = 0; wb.i < wb.vectorLength; wb.i++) {
-            wb.layer1 += wb.syn0[wb.i] * wb.syn1[wb.i];
-        }
-
-        // logistic transfer function
-        wb.layer1 = logistic(wb.layer1);
-
-        if (wb.code[wb.b]) {
-            wb.gradient = -wb.layer1 * wb.alpha;
-        } else {
-            wb.gradient = (1.0f - wb.layer1) * wb.alpha;
-        }
-
-        for (wb.i = 0; wb.i < wb.vectorLength; wb.i++) {
-            wb.layer0[wb.i] += wb.gradient * wb.syn1[wb.i];
-            wb.syn1[wb.i] += wb.gradient * wb.syn0[wb.i];
-        }
-        wb.syn1buf.position(wb.path[wb.b] * wb.vectorLength);
-        wb.syn1buf.put(wb.syn1);
-    }
-
-    /**
-     * Iterates over the target word's path and calls trainPath which actually computes each probability.
-     *
-     * @param wb the current workbench object
-     */
-    public static void trainOther(TrainWorkbench wb) {
-        wb.otherWord = wb.words[wb.otherPos];
-        if ((wb.pos != wb.otherPos) && (wb.otherWord != null)) {
-            wb.path = wb.otherWord.getPath();
-            wb.code = wb.otherWord.getCode();
-
-            fillZero(wb.layer0);
-
-            for (wb.b = 0; wb.b < wb.path.length; wb.b++) {
-                trainPath(wb);
-            }
-            for (wb.i = 0; wb.i < wb.vectorLength; wb.i++) {
-                wb.syn0[wb.i] += wb.layer0[wb.i];
-            }
-            wb.syn0buf.position(wb.wordIndex * wb.vectorLength);
-            wb.syn0buf.put(wb.syn0);
-        }
 
     }
 
     /**
-     * Trains the word at the current position. Randomizes the window and chooses the words left and right of the
-     * center word. Calls trainOther which computes the training step between the pair.
+     * Trains the word at the current position.
+     *
+     * This is main hot spot during training. Any optimization effort should be put here.
      *
      * @param wb the current workbench object
      */
-    public static void trainWord(TrainWorkbench wb) {
-        wb.word = wb.words[wb.pos];
+    public static void trainWord(int pos, float alpha, TrainWorkbench wb) {
+        wb.word = wb.words[pos];
         if (wb.word == null) return;
-        wb.wordIndex = wb.word.getIndex();
-        wb.syn0buf.position(wb.wordIndex * wb.vectorLength);
+        int wordIndex = wb.word.getIndex();
+        wb.syn0buf.position(wordIndex * wb.vectorLength);
         wb.syn0buf.get(wb.syn0);
 
-        wb.reducedWindow = ThreadLocalRandom.current().nextInt(wSize);
-        wb.leftBound = Math.max(0, wb.pos - wSize + wb.reducedWindow);
-        wb.rightBound = Math.min(wb.words.length, wb.pos + wSize + 1 - wb.reducedWindow);
-        for (wb.otherPos = wb.leftBound; wb.otherPos < wb.rightBound; wb.otherPos++) {
-            trainOther(wb);
+        int a, b, i;
+        float net_output, delta;
+
+        int reducedWindow = ThreadLocalRandom.current().nextInt(wSize);
+        int leftBound = Math.max(0, pos - wSize + reducedWindow);
+        int rightBound = Math.min(wb.words.length, pos + wSize + 1 - reducedWindow);
+        for (int otherPos = leftBound; otherPos < rightBound; otherPos++) {
+            wb.otherWord = wb.words[otherPos];
+            if ((pos != otherPos) && (wb.otherWord != null)) {
+                wb.path = wb.otherWord.getPath();
+                wb.code = wb.otherWord.getCode();
+
+                for (a = 0; a < wb.layer0.length; a++) {
+                    wb.layer0[a] = 0.0f;
+                }
+
+                for (b = 0; b < wb.path.length; b++) {
+                    wb.syn1buf.position(wb.path[b] * wb.vectorLength);
+                    wb.syn1buf.get(wb.syn1);
+
+                    net_output = 0.0f;
+
+                    for (i = 0; i < wb.vectorLength; i++) {
+                        net_output += wb.syn0[i] * wb.syn1[i];
+                    }
+
+                    // logistic transfer function
+                    net_output = logistic(net_output);
+
+                    if (wb.code[b]) {
+                        delta = -net_output * alpha;
+                    } else {
+                        delta = (1.0f - net_output) * alpha;
+                    }
+
+                    for (i = 0; i < wb.vectorLength; i++) {
+                        wb.layer0[i] += delta * wb.syn1[i];
+                        wb.syn1[i] += delta * wb.syn0[i];
+                    }
+                    wb.syn1buf.position(wb.path[b] * wb.vectorLength);
+                    wb.syn1buf.put(wb.syn1);
+                }
+
+                for (i = 0; i < wb.vectorLength; i++) {
+                    wb.syn0[i] += wb.layer0[i];
+                }
+                wb.syn0buf.position(wordIndex * wb.vectorLength);
+                wb.syn0buf.put(wb.syn0);
+            }
         }
     }
 
@@ -147,13 +133,12 @@ public class TrainDocument extends RecursiveTask<Integer> {
      */
     public static Integer computeDirectly(TrainWorkbench wb, Vocable[] words, int start, int end, float alpha) {
         wb.words = words;
-        wb.alpha = alpha;
-        wb.n = 0;
-        for (wb.pos = start; wb.pos < end; wb.pos++) {
-            trainWord(wb);
-            wb.n++;
+        int n = 0;
+        for (int pos = start; pos < end; pos++) {
+            trainWord(pos, alpha, wb);
+            n++;
         }
-        return wb.n;
+        return n;
     }
 
     /**
