@@ -1,4 +1,4 @@
-This is a prototypal implementation of Continuous Skip-gram Models (CSGM) using plain Java.
+This is a prototypal implementation of Continuous Skip-gram Models (CSGM) using plain Java and the Fork/Join framework.
 It has been developed in the scope of a student project at [Hochschule der Medien Stuttgart](https://www.hdm-stuttgart.de/). 
 It yields competitive results when compared to gensim:
 
@@ -13,3 +13,6 @@ It yields competitive results when compared to gensim:
 <tr><td>kwords/sec</td><td>0.16</td><td>180.11</td><td><b>205.11</b></td><td>309.87</td><tr>
 </tr><td>docs/sec</td><td>0.11</td><td>138.75</td><td><b>145.19</b></td><td>238.28</td></tr>
 </table>
+
+
+This project is currently just a proof-of-concept. It will be refined to a full-fledged library in the future. Stay tuned.
