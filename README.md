@@ -17,6 +17,5 @@ It yields competitive results when compared to gensim when applied to the first 
 
 This project is currently just a proof-of-concept.
 Currently there are still paths to local files and folders specific to my machine.
-The tests are crappy, Tt lacks documentation, and so on ...
-It is really raw.
+The tests are crappy. It lacks documentation. It is really raw.
 But it will be refined to a full-fledged library in the future. Stay tuned!
